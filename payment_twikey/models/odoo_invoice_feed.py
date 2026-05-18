@@ -146,11 +146,9 @@ class OdooInvoiceFeed(InvoiceFeed):
                                     last_payment["rc"]
                                 )
                                 tx._set_error(errorcode)
-                                refund = tx._send_refund_request(
-                                    amount_to_refund=tx.amount,
-                                    provider_reference=id,
-                                    invoice_ids=invoice_id.ids,
-                                )
+                                refund = tx._send_refund_request(amount_to_refund=tx.amount)
+                                refund.provider_reference = id
+                                refund.invoice_ids = [Command.set(invoice_id.ids)]
                                 # tx._set_error(errorcode) wont work as done can't be reverted
                                 refund._set_done(state_message=errorcode)
                                 refund._post_process()
@@ -183,7 +181,8 @@ class OdooInvoiceFeed(InvoiceFeed):
                                 last_payment["rc"]
                             )
                             tx._set_error(errorcode)
-                            refund = tx._send_refund_request(provider_reference=id)
+                            refund = tx._send_refund_request()
+                            refund.provider_reference = id
                             refund._set_done(state_message=errorcode)
                             refund._post_process()
                     else:
