@@ -143,7 +143,7 @@ class OdooInvoiceFeed(InvoiceFeed):
                             )
                             if tx:
                                 errorcode = "Failed with errorcode={}".format(
-                                    last_payment["rc"]
+                                    last_payment.get("rc", "unknown error")
                                 )
                                 tx._set_error(errorcode)
                                 refund = tx._send_refund_request(amount_to_refund=tx.amount)
@@ -178,7 +178,7 @@ class OdooInvoiceFeed(InvoiceFeed):
                             tx._post_process()
                         elif new_state in ["BOOKED", "EXPIRED"]:
                             errorcode = "Failed with errorcode={}".format(
-                                last_payment["rc"]
+                                last_payment.get("rc", "unknown error")
                             )
                             tx._set_error(errorcode)
                             refund = tx._send_refund_request()
