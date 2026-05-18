@@ -270,7 +270,6 @@ class PaymentTransaction(models.Model):
         )
         if twikey_client:
             try:
-                super()._send_payment_request()
                 if self._context.get("active_model") == "account.move":
                     invoice_id = self.env["account.move"].browse(
                         self._context.get("active_ids", [])
