@@ -85,6 +85,12 @@ class OdooInvoiceFeed(InvoiceFeed):
             last_payment = twikey_invoice.get("lastpayment")[0]
 
         try:
+            if new_state in ("BOOKED", "EXPIRED") and self.transaction.search_count([
+                ("provider_reference", "=", id),
+                ("operation", "=", "refund"),
+            ]):
+                return
+
             if ref_id and ref_id.isnumeric():
                 invoice_id = self.account_move.browse(int(ref_id))
                 if invoice_id.exists():
