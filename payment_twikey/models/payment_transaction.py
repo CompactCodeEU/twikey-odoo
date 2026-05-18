@@ -146,14 +146,16 @@ class PaymentTransaction(models.Model):
         return payload
 
     def _get_tx_from_notification_data(self, provider_code, notification_data):
+        tx = super()._get_tx_from_notification_data(provider_code, notification_data)
+        if provider_code != 'twikey' or len(tx) == 1:
+            return tx
+
         tx = self.search(
             [
                 ("reference", "=", notification_data.get("ref")),
                 ("provider_code", "=", "twikey"),
             ]
         )
-        if provider_code != "twikey" or len(tx) == 1:
-            return tx
         if not tx:
             raise ValidationError(
                 "Twikey: "
