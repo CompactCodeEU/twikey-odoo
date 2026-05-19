@@ -116,7 +116,7 @@ class PaymentTransaction(models.Model):
                 else:
                     _logger.info("Unknown invoice to Twikey, not linking")
             else:
-                raise "Unable to combine 2 invoices to the same link for reconciliation reasons"
+                raise ValidationError(_("Unable to combine 2 invoices to the same link for reconciliation reasons"))
 
         return payload
 
@@ -141,7 +141,7 @@ class PaymentTransaction(models.Model):
                 else:
                     _logger.info("Unknown invoice to Twikey, not linking")
             else:
-                raise "Unable to combine 2 invoices to the same link for reconciliation reasons"
+                raise ValidationError(_("Unable to combine 2 invoices to the same link for reconciliation reasons"))
 
         return payload
 
