@@ -85,6 +85,12 @@ class OdooInvoiceFeed(InvoiceFeed):
             last_payment = twikey_invoice.get("lastpayment")[0]
 
         try:
+            if new_state == "PAID" and self.transaction.search_count([
+                ("provider_reference", "=", id),
+                ("state", "=", "done"),
+            ]):
+                return
+
             if new_state in ("BOOKED", "EXPIRED") and self.transaction.search_count([
                 ("provider_reference", "=", id),
                 ("operation", "=", "refund"),
