@@ -26,10 +26,10 @@ class OdooInvoiceFeed(InvoiceFeed):
             "method"
         )  # sdd/rcc/paylink/reporting/manual
         if twikey_payment_method == "paylink":
-            payment_description = "paylink #{}".format(last_payment["link"])
+            payment_description = "paylink #{}".format(last_payment.get("link", "unknown"))
         elif twikey_payment_method in ["sdd", "rcc"]:
-            pmtinf = last_payment["pmtinf"]
-            e2e = last_payment["e2e"]
+            pmtinf = last_payment.get("pmtinf", "unknown")
+            e2e = last_payment.get("e2e", "unknown")
             if twikey_payment_method == "sdd":
                 payment_description = "Direct Debit pmtinf={} e2e={}".format(
                     pmtinf,
@@ -149,7 +149,7 @@ class OdooInvoiceFeed(InvoiceFeed):
                     elif new_state in ["BOOKED", "EXPIRED"]:
                         # Getting here means either a regular expiry or a reversal
                         if last_payment:
-                            provider_reference = last_payment["e2e"]
+                            provider_reference = last_payment.get("e2e", "unknown")
                             tx = self.transaction.search(
                                 [("provider_reference", "=", id)]
                             )
