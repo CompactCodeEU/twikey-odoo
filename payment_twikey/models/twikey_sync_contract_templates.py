@@ -263,7 +263,6 @@ class SyncContractTemplates(models.AbstractModel):
             if template_id.twikey_attribute_ids:
                 if twikey_attr_name not in template_id.twikey_attribute_ids.mapped("name"):
                     template_id.write({"twikey_attribute_ids": [(0, 0, attribute_vals)]})
-                    self.env["twikey.contract.template.attribute"].create(attribute_vals)
             else:
                 template_id.write({"twikey_attribute_ids": [(0, 0, attribute_vals)]})
 
