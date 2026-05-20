@@ -193,7 +193,7 @@ class OdooInvoiceFeed(InvoiceFeed):
                                 last_payment.get("rc", "unknown error")
                             )
                             tx._set_error(errorcode)
-                            refund = tx._send_refund_request()
+                            refund = tx._send_refund_request(amount_to_refund=tx.amount)
                             refund.provider_reference = id
                             refund._set_done(state_message=errorcode)
                             refund._post_process()
