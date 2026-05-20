@@ -82,21 +82,20 @@ class TwikeyMandateDetails(models.Model):
                 ).message_post(subject="Mandates", body=errmsg)
 
     def write(self, values):
-        self.ensure_one()
         res = super().write(values)
 
         try:
             twikey_client = self.env["ir.config_parameter"].get_twikey_client(
                 company=self.env.company
             )
-            if twikey_client:
-                if not self._context.get("update_feed"):
+            if twikey_client and not self._context.get("update_feed"):
+                for record in self:
                     data = {}
-                    if self.state != "signed":
+                    if record.state != "signed":
                         data["mndtId"] = (
                             values.get("reference")
                             if values.get("reference")
-                            else self.reference
+                            else record.reference
                         )
                         if "iban" in values:
                             data["iban"] = values.get("iban") or ""
