@@ -83,7 +83,7 @@ class SyncContractTemplates(models.AbstractModel):
             else:
                 return False
         except TwikeyError as e:
-            raise UserError from e
+            raise UserError(_("Twikey: %s", e)) from e
 
     def search_create_template(self, profile):
         ct = profile.get("id")

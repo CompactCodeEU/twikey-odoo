@@ -116,7 +116,7 @@ class TwikeyMandateDetails(models.Model):
                             raise UserError(_("Error sending update: %s") % (str(e)))
             return res
         except TwikeyError as e:
-            raise UserError from e
+            raise UserError(_("Twikey: %s", e)) from e
 
     def is_signed(self):
         return self.state == "signed"
