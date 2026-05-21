@@ -64,6 +64,12 @@ class TwikeyMandateDetails(models.Model):
         if not company:
             company = self.env.company
         try:
+            # set lock on res_company to avoid duplicate calls
+            self._cr.execute(
+                """SELECT id FROM res_company WHERE id = %s FOR UPDATE NOWAIT""",
+                [company.id],
+                log_exceptions=False,
+            )
             _logger.debug(
                 f"Fetching Twikey updates from {company.sudo().mandate_feed_pos}"
             )
