@@ -83,7 +83,7 @@ class SyncContractTemplates(models.AbstractModel):
             else:
                 return False
         except TwikeyError as e:
-            raise UserError from e
+            raise UserError(_("Twikey: %s", e)) from e
 
     def search_create_template(self, profile):
         ct = profile.get("id")
@@ -263,7 +263,6 @@ class SyncContractTemplates(models.AbstractModel):
             if template_id.twikey_attribute_ids:
                 if twikey_attr_name not in template_id.twikey_attribute_ids.mapped("name"):
                     template_id.write({"twikey_attribute_ids": [(0, 0, attribute_vals)]})
-                    self.env["twikey.contract.template.attribute"].create(attribute_vals)
             else:
                 template_id.write({"twikey_attribute_ids": [(0, 0, attribute_vals)]})
 

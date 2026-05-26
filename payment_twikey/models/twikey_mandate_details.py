@@ -64,6 +64,12 @@ class TwikeyMandateDetails(models.Model):
         if not company:
             company = self.env.company
         try:
+            # set lock on res_company to avoid duplicate calls
+            self._cr.execute(
+                """SELECT id FROM res_company WHERE id = %s FOR UPDATE NOWAIT""",
+                [company.id],
+                log_exceptions=False,
+            )
             _logger.debug(
                 f"Fetching Twikey updates from {company.sudo().mandate_feed_pos}"
             )
@@ -82,21 +88,20 @@ class TwikeyMandateDetails(models.Model):
                 ).message_post(subject="Mandates", body=errmsg)
 
     def write(self, values):
-        self.ensure_one()
         res = super().write(values)
 
         try:
             twikey_client = self.env["ir.config_parameter"].get_twikey_client(
                 company=self.env.company
             )
-            if twikey_client:
-                if not self._context.get("update_feed"):
+            if twikey_client and not self._context.get("update_feed"):
+                for record in self:
                     data = {}
-                    if self.state != "signed":
+                    if record.state != "signed":
                         data["mndtId"] = (
                             values.get("reference")
                             if values.get("reference")
-                            else self.reference
+                            else record.reference
                         )
                         if "iban" in values:
                             data["iban"] = values.get("iban") or ""
@@ -116,7 +121,7 @@ class TwikeyMandateDetails(models.Model):
                             raise UserError(_("Error sending update: %s") % (str(e)))
             return res
         except TwikeyError as e:
-            raise UserError from e
+            raise UserError(_("Twikey: %s", e)) from e
 
     def is_signed(self):
         return self.state == "signed"

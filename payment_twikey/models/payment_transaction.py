@@ -116,7 +116,7 @@ class PaymentTransaction(models.Model):
                 else:
                     _logger.info("Unknown invoice to Twikey, not linking")
             else:
-                raise "Unable to combine 2 invoices to the same link for reconciliation reasons"
+                raise ValidationError(_("Unable to combine 2 invoices to the same link for reconciliation reasons"))
 
         return payload
 
@@ -141,19 +141,21 @@ class PaymentTransaction(models.Model):
                 else:
                     _logger.info("Unknown invoice to Twikey, not linking")
             else:
-                raise "Unable to combine 2 invoices to the same link for reconciliation reasons"
+                raise ValidationError(_("Unable to combine 2 invoices to the same link for reconciliation reasons"))
 
         return payload
 
     def _get_tx_from_notification_data(self, provider_code, notification_data):
+        tx = super()._get_tx_from_notification_data(provider_code, notification_data)
+        if provider_code != 'twikey' or len(tx) == 1:
+            return tx
+
         tx = self.search(
             [
                 ("reference", "=", notification_data.get("ref")),
                 ("provider_code", "=", "twikey"),
             ]
         )
-        if provider_code != "twikey" or len(tx) == 1:
-            return tx
         if not tx:
             raise ValidationError(
                 "Twikey: "
@@ -268,7 +270,6 @@ class PaymentTransaction(models.Model):
         )
         if twikey_client:
             try:
-                super()._send_payment_request()
                 if self._context.get("active_model") == "account.move":
                     invoice_id = self.env["account.move"].browse(
                         self._context.get("active_ids", [])

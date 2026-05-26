@@ -54,6 +54,7 @@ class PaymentProvider(models.Model):
         existing_token = (
             self.env["payment.token"]
             .sudo()
+            .with_context(active_test=False)
             .search(
                 [
                     ("provider_code", "=", self.code),

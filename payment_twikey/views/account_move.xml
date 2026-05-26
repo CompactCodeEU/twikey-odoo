@@ -22,8 +22,10 @@
                         <field name="twikey_template_id"    invisible="not twikey_invoice_identifier" readonly="state != 'draft'"/>
                         <field name="twikey_invoice_state"  invisible="not twikey_invoice_identifier"
                                widget="badge"
-                               decoration-info="twikey_invoice_state == 'Pending'"
-                               decoration-success="twikey_invoice_state == 'Paid'"
+                               decoration-warning="twikey_invoice_state == 'BOOKED'"
+                               decoration-info="twikey_invoice_state == 'PENDING'"
+                               decoration-success="twikey_invoice_state == 'PAID'"
+                               decoration-danger="twikey_invoice_state == 'EXPIRED'"
                                readonly="True"/>
                     </group>
                 </page>
@@ -35,15 +37,8 @@
         <field name="name">Send to Twikey</field>
         <field name="model_id" ref="account.model_account_move"/>
         <field name="binding_model_id" ref="account.model_account_move"/>
-        <field name="binding_view_types">tree,form</field>
+        <field name="binding_view_types">list,form</field>
         <field name="state">code</field>
         <field name="code">records.btn_send_to_twikey()</field>
     </record>
-
-    <menuitem
-            id="menu_action_twikey"
-            action="model_account_move_send_to_twikey"
-            parent="contacts.res_partner_menu_config"
-            sequence="1"
-    />
 </odoo>

@@ -155,15 +155,16 @@ class TwikeyContractTemplateWizard(models.TransientModel):
 
 
     def send_mail(self):
-        mail_values = {
+        email_values = {
             'subject': self.mail_subject,
             'body_html': self.mail_body,
             'email_to': self.partner_id.email,
         }
-        mail_id = self.mail_template_id.with_context(wizard=self, custom_values=mail_values).send_mail(
+        mail_id = self.mail_template_id.send_mail(
             self.id,
             # force_send=True,  # Send immediately instead of waiting for cron
-            raise_exception=True
+            raise_exception=True,
+            email_values=email_values,
         )
         _logger.info(f"Sent mandate invite to {self.partner_id.email} with number {self.mandate_id.reference} (id={mail_id})")
         return get_success_msg("Mandate invitation(s) created successfully.")

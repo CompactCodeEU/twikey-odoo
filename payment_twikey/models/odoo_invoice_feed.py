@@ -26,10 +26,10 @@ class OdooInvoiceFeed(InvoiceFeed):
             "method"
         )  # sdd/rcc/paylink/reporting/manual
         if twikey_payment_method == "paylink":
-            payment_description = "paylink #{}".format(last_payment["link"])
+            payment_description = "paylink #{}".format(last_payment.get("link", "unknown link"))
         elif twikey_payment_method in ["sdd", "rcc"]:
-            pmtinf = last_payment["pmtinf"]
-            e2e = last_payment["e2e"]
+            pmtinf = last_payment.get("pmtinf")
+            e2e = last_payment.get("e2e")
             if twikey_payment_method == "sdd":
                 payment_description = "Direct Debit pmtinf={} e2e={}".format(
                     pmtinf,
@@ -85,6 +85,18 @@ class OdooInvoiceFeed(InvoiceFeed):
             last_payment = twikey_invoice.get("lastpayment")[0]
 
         try:
+            if new_state == "PAID" and self.transaction.search_count([
+                ("provider_reference", "=", id),
+                ("state", "=", "done"),
+            ]):
+                return
+
+            if new_state in ("BOOKED", "EXPIRED") and self.transaction.search_count([
+                ("provider_reference", "=", id),
+                ("operation", "=", "refund"),
+            ]):
+                return
+
             if ref_id and ref_id.isnumeric():
                 invoice_id = self.account_move.browse(int(ref_id))
                 if invoice_id.exists():
@@ -137,20 +149,18 @@ class OdooInvoiceFeed(InvoiceFeed):
                     elif new_state in ["BOOKED", "EXPIRED"]:
                         # Getting here means either a regular expiry or a reversal
                         if last_payment:
-                            provider_reference = last_payment["e2e"]
+                            provider_reference = last_payment.get("e2e")
                             tx = self.transaction.search(
                                 [("provider_reference", "=", id)]
                             )
                             if tx:
                                 errorcode = "Failed with errorcode={}".format(
-                                    last_payment["rc"]
+                                    last_payment.get("rc")
                                 )
                                 tx._set_error(errorcode)
-                                refund = tx._send_refund_request(
-                                    amount_to_refund=tx.amount,
-                                    provider_reference=id,
-                                    invoice_ids=invoice_id.ids,
-                                )
+                                refund = tx._send_refund_request(amount_to_refund=tx.amount)
+                                refund.provider_reference = id
+                                refund.invoice_ids = [Command.set(invoice_id.ids)]
                                 # tx._set_error(errorcode) wont work as done can't be reverted
                                 refund._set_done(state_message=errorcode)
                                 refund._post_process()
@@ -180,10 +190,11 @@ class OdooInvoiceFeed(InvoiceFeed):
                             tx._post_process()
                         elif new_state in ["BOOKED", "EXPIRED"]:
                             errorcode = "Failed with errorcode={}".format(
-                                last_payment["rc"]
+                                last_payment.get("rc")
                             )
                             tx._set_error(errorcode)
-                            refund = tx._send_refund_request(provider_reference=id)
+                            refund = tx._send_refund_request(amount_to_refund=tx.amount)
+                            refund.provider_reference = id
                             refund._set_done(state_message=errorcode)
                             refund._post_process()
                     else:
