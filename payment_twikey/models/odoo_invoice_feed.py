@@ -28,8 +28,8 @@ class OdooInvoiceFeed(InvoiceFeed):
         if twikey_payment_method == "paylink":
             payment_description = "paylink #{}".format(last_payment.get("link", "unknown link"))
         elif twikey_payment_method in ["sdd", "rcc"]:
-            pmtinf = last_payment.get("pmtinf", "unknown pmtinf")
-            e2e = last_payment.get("e2e", "unknown e2e")
+            pmtinf = last_payment.get("pmtinf")
+            e2e = last_payment.get("e2e")
             if twikey_payment_method == "sdd":
                 payment_description = "Direct Debit pmtinf={} e2e={}".format(
                     pmtinf,
@@ -149,13 +149,13 @@ class OdooInvoiceFeed(InvoiceFeed):
                     elif new_state in ["BOOKED", "EXPIRED"]:
                         # Getting here means either a regular expiry or a reversal
                         if last_payment:
-                            provider_reference = last_payment.get("e2e", "unknown e2e")
+                            provider_reference = last_payment.get("e2e")
                             tx = self.transaction.search(
                                 [("provider_reference", "=", id)]
                             )
                             if tx:
                                 errorcode = "Failed with errorcode={}".format(
-                                    last_payment.get("rc", "unknown error")
+                                    last_payment.get("rc")
                                 )
                                 tx._set_error(errorcode)
                                 refund = tx._send_refund_request(amount_to_refund=tx.amount)
@@ -190,7 +190,7 @@ class OdooInvoiceFeed(InvoiceFeed):
                             tx._post_process()
                         elif new_state in ["BOOKED", "EXPIRED"]:
                             errorcode = "Failed with errorcode={}".format(
-                                last_payment.get("rc", "unknown error")
+                                last_payment.get("rc")
                             )
                             tx._set_error(errorcode)
                             refund = tx._send_refund_request(amount_to_refund=tx.amount)
