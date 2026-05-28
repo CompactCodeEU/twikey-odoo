@@ -9,6 +9,7 @@
     "depends": [
         "payment",
         "account",
+        "account_payment",
         "contacts",
         "sale",
     ],
