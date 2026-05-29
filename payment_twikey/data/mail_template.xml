@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <odoo noupdate="1">
-    <record id="account.email_template_edi_invoice" model="mail.template">
-        <field name="name">Invoice: Send by email</field>
+    <record id="email_template_edi_invoice_twikey" model="mail.template">
+        <field name="name">Invoice: Sending (Twikey)</field>
         <field name="model_id" ref="account.model_account_move"/>
-        <field name="subject">Your invoice</field>
+        <field name="email_from">{{ (object.invoice_user_id.email_formatted or object.company_id.email_formatted or user.email_formatted) }}</field>
+        <field name="partner_to">{{ object.partner_id.id }}</field>
+        <field name="subject">{{ object.company_id.name }} Invoice (Ref {{ object.name or 'n/a' }})</field>
+        <field name="description">Sent to customers with their invoices, including a Twikey payment link when available.</field>
         <field name="body_html" type="html">
             <div style="margin: 0px; padding: 0px;">
                 <p style="margin: 0px; padding: 0px; font-size: 13px;">
@@ -45,7 +48,10 @@
                             <a t-att-href="object.twikey_url">or pay here directly.</a>
                         </t>
                     </t>
-
+                    <t t-if="hasattr(object, 'timesheet_count') and object.timesheet_count">
+                        <br /><br />
+                        PS: you can review your timesheets <a t-att-href="'/my/timesheets?search_in=invoice&amp;search=%s' % object.name">from the portal.</a>
+                    </t>
                     <br /><br />
                     Do not hesitate to contact us if you have any questions.
                     <t t-if="not is_html_empty(object.invoice_user_id.signature)">
@@ -55,6 +61,9 @@
                 </p>
             </div>
         </field>
+        <field name="report_template_ids" eval="[Command.link(ref('account.account_invoices'))]"/>
+        <field name="lang">{{ object.partner_id.lang }}</field>
+        <field name="auto_delete" eval="True"/>
     </record>
 
     <record id="mandate_email_invite" model="mail.template">

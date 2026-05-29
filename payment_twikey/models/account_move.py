@@ -442,3 +442,15 @@ class AccountInvoice(models.Model):
                 )
         else:
             self.id_and_link_html = False
+
+    def _get_mail_template(self):
+        template = super()._get_mail_template()
+        standard_invoice = self.env.ref("account.email_template_edi_invoice", raise_if_not_found=False)
+
+        if template != standard_invoice:
+            return template
+
+        if not all(move.transaction_ids.filtered(lambda t: t.provider_code == "twikey") for move in self):
+            return template
+
+        return self.env.ref("payment_twikey.email_template_edi_invoice_twikey", raise_if_not_found=False) or template
